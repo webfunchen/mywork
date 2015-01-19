@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<title>html5涂抹效果</title>
+<head>
+<meta charset="utf-8">    
+<link type="text/css" href="http://assets.taobaocdn.com/tbsp/reset-grids.css" rel="stylesheet" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<script src="http://blog.chenpansong.cn/assets/jquery.js"></script>
+<style type="text/css">
+.displaynone{display:none;}
+.canvasbg{width:300px;height:300px;background:url("http://s6.mogucdn.com/pic/141119/13t2zv_ieydoylbgy2dkzjzmqytambqmeyde_640x1137.jpg") center no-repeat;margin:0 auto;}
+</style>
+</head>
+<body>
+<div class="by_wrapper">
+	<input type="range" min="-20" max="20" step="0.8" value="0" id="brightChannel">
+	<div class="canvasbg">
+    	<canvas id="mycanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="displaynone">
+    	<img src="http://web.sunworldmedia.com/dkn/118aymq/i/5.jpg" id="mainimg">
+    </div>
+</div>
+<script>
+var start=function(){
+$(function(){
+var _ctx="";
+var config={
+		el:".main-box",//每一块的容器
+		isdebug:true,//是否开启console'
+		speed:500,//每一屏幕切换的速度
+		triggerdis:150,//触摸这个距离后才翻屏
+		eventlist:["touchstart","touchmove","touchend"],//touch事件列表
+		log:function(a){
+	        if(config.isdebug){console.log(a);$(".show").html(a);}
+	  }
+	};
+var _imgs={
+	mainimg:document.getElementById("mainimg")
+};
+var canvas={
+	width:300,
+	height:300,
+	id:"mycanvas",
+	init:function(){
+		var _this=this;
+		var obj=document.getElementById(_this.id);
+		var ctx=obj.getContext("2d"); 
+		return ctx;
+	}
+}
+
+var _people=function(){
+	this.x=0;
+	this.y=0;
+	this.w=300;
+	this.h=300;
+	this.obj=_imgs.mainimg;
+	this.dir=0;
+	//this.keycontrol();
+	this.draw();
+	};
+	_people.prototype={
+	draw:function(px,py){
+		var _this=this;
+		_ctx.drawImage(_this.obj,_this.x,_this.y);
+	}
+};
+_ctx=canvas.init();//初始化画布
+var c1=new _people();//画人
+var _move={
+		dis:0,//触摸时记录距离
+		dir:0,//滑屏的方向
+		touchtime:0,//触摸的次数，保证一个手指
+		index:0,//记录当前是第几屏
+		radius:20
+};
+var _touch={
+		clear:function(x,y){
+			r=_move.radius;
+			 for( var i = 0 ; i < Math.round( Math.PI * r ) ; i++ ){
+			  var angle = ( i / Math.round( Math.PI * r )) * 360;
+			  _ctx.clearRect( x , y , Math.sin( angle * ( Math.PI / 180 )) * r , Math.cos( angle * ( Math.PI / 180 )) * r );
+			 }
+		},
+		touch:function(el){
+			var _this=this;
+			var y1=0,y2=0;
+			$(el)[0].addEventListener("touchstart", function (e) {
+				/*touchstart，触摸开始*/
+				e.preventDefault(); 
+		        y1 = e.targetTouches[0].pageY;
+		        x1 = e.targetTouches[0].pageX;
+		        _move.dis=0;_move.dir=0;_move.touchtime+=1;
+		        config.log(y1+","+x1);
+		        _this.clear(x1,y1);
+		    });
+		  $(el)[0].addEventListener("touchend", function (e) {
+		    	/*touchend触摸结束后*/
+		    	if(_move.touchtime>=2){_move.touchtime=0;return false;}
+		    	e.preventDefault();_move.touchtime=0;
+		    	var data = _ctx.getImageData(0, 0, 480, 480).data;
+    			config.log(data, data.toString());
+		    });
+		    $(el)[0].addEventListener("touchmove", function (e) {
+		    	/*touchmove，滑屏过程中*/
+		    	e.preventDefault();
+		    	if(_move.touchtime>=2){return false;}
+		    	y2=e.changedTouches[0].pageY;
+		    	x2=e.changedTouches[0].pageX;
+		    	config.log(x2+","+y2);
+		    	_this.clear(x2,y2);
+		       
+		    });
+		},
+		init:function(){
+			this.touch("#mycanvas");
+		}
+	};
+_touch.init();
+
+	//窗口加载后执行
+	/*$("#"+canvas.id).click(function(e){
+		console.log(e);
+	});*/
+});
+};
+window.onload=function(){start();};
+
+</script>
+</body>
+</html>
